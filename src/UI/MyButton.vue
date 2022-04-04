@@ -1,15 +1,18 @@
 <template>
-  <butto class="btn">
+  <button class="btn">
     <slot></slot>
-  </butto>
+  </button>
 </template>
 
 <script>
-export default {};
+export default {
+  name: "my-button",
+};
 </script>
 
 <style scoped>
 .btn {
+  margin-top: 15px;
   padding: 10px 15px;
   background-color: none;
   color: teal;
