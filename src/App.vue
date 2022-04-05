@@ -16,11 +16,18 @@
       v-if="!isPostsLoading"
     />
     <div v-else>Идет загрузка....</div>
-    <div class="page__wrapper">
-      <div v-for="page in totalPages" :key="page" class="page">
-        {{ page }}
+    <div ref="observer" class="observer"></div>
+    <!-- <div class="page__wrapper">
+      <div
+        v-for="pageNumber in totalPages"
+        :key="pageNumber"
+        class="page"
+        :class="{ 'current-page': page === pageNumber }"
+        @click="changePage(pageNumber)"
+      >
+        {{ pageNumber }}
       </div>
-    </div>
+    </div> -->
   </div>
 </template>
 
@@ -60,6 +67,9 @@ export default {
     showDialog() {
       this.dialogVisible = true;
     },
+    // changePage(pageNumber) {
+    //   this.page = pageNumber;
+    // },
     async fetchPosts() {
       try {
         this.isPostsLoading = true;
@@ -84,9 +94,44 @@ export default {
       } finally {
       }
     },
+    async loadMorePosts() {
+      try {
+        this.page += 1;
+        setTimeout(async () => {
+          const response = await axios.get(
+            "https://jsonplaceholder.typicode.com/posts",
+            {
+              params: {
+                _page: this.page,
+                _limit: this.limit,
+              },
+            }
+          );
+          this.totalPages = Math.ceil(
+            response.headers["x-total-count"] / this.limit
+          );
+          this.posts = [...this.posts, ...response.data];
+          this.isPostsLoading = false;
+        }, 1000);
+      } catch (e) {
+        alert("Error");
+      }
+    },
   },
   mounted() {
     this.fetchPosts();
+    console.log(this.$refs.observer);
+    var options = {
+      rootMargin: "0px",
+      threshold: 1.0,
+    };
+    var callback = (entries, observer) => {
+      if (entries[0].isIntersecting && this.page < this.totalPages) {
+        this.loadMorePosts();
+      }
+    };
+    var observer = new IntersectionObserver(callback, options);
+    observer.observe(this.$refs.observer);
   },
 
   computed: {
@@ -100,6 +145,11 @@ export default {
         post.title.includes(this.searchQuery)
       );
     },
+  },
+  watch: {
+    // page() {
+    //   this.fetchPosts();
+    // },
   },
 };
 </script>
@@ -124,5 +174,12 @@ export default {
 .page {
   border: 1px solid black;
   padding: 10px;
+}
+.current-page {
+  border: 2px solid teal;
+}
+.observer {
+  height: 30px;
+  background: rgb(25, 93, 42);
 }
 </style>
