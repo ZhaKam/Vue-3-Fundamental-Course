@@ -3,10 +3,7 @@
     <h1>Страница с постами</h1>
     <div class="app__btns">
       <my-button @click="showDialog"> Создать пост </my-button>
-      <my-select
-        v-model="selectedSort"
-        :options="sortOptions"
-        />
+      <my-select v-model="selectedSort" :options="sortOptions" />
     </div>
 
     <my-dialog v-model:show="dialogVisible">
@@ -34,7 +31,7 @@ export default {
       selectedSort: "",
       sortOptions: [
         { value: "title", name: "По названию" },
-        { value: "body", name: "По содержанию" }
+        { value: "body", name: "По содержанию" },
       ],
     };
   },
@@ -67,6 +64,14 @@ export default {
   },
   mounted() {
     this.fetchPosts();
+  },
+
+  watch: {
+    selectedSort(newValue) {
+      this.posts.sort((post1, post2) => {
+        return post1[newValue]?.localeCompare(post2[newValue]);
+      });
+    },
   },
 };
 </script>
